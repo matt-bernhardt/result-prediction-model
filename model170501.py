@@ -122,14 +122,6 @@ def loadStats(teamid):
     return stats
 
 
-def logStandings(log, standings):
-    log.message('Team Pts GP PPG')
-    # Maybe we can make this prettier
-    for key in sorted(standings.keys()):
-        log.message(str(key) + ': ' + str(standings[key]['Points']) + ' ' + str(standings[key]['GP']) + ' ' + str(standings[key]['PPG']))
-    log.message('')
-
-
 def simulateGame(data, home, away, log):
     # log.message(str(home) + ' vs ' + str(away))
 
@@ -168,7 +160,7 @@ def simulateSeason(gamelist, log, output, database, initialdata):
 
     # Log initial standings
     log.message('Starting position:')
-    logStandings(log, thisdata)
+    log.standings(thisdata)
 
     # For each game in the list, simulate the result and calculate points array
     for game in enumerate(gamelist):
@@ -192,7 +184,7 @@ if __name__ == "__main__":
 
     # Log initial standings
     log.message('Starting position:')
-    logStandings(log, initial)
+    log.standings(initial)
 
     # Initialize output file
     # This is after the data init because the first step is to
