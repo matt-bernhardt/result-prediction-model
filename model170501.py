@@ -88,32 +88,26 @@ def loadGames(database):
 def loadStats(database, teamid):
     # This calculates a given team's GP, Points, and PPG values.
     # It is part of the initialization step.
-    sql = ("SELECT HTeamID, HScore, ATeamID, AScore "
+    sql = ("SET @GP = 0;"
+           "SET @Pts = 0;"
+           "SELECT HTeamID, HScore, ATeamID, AScore, @GP:=@GP+1 AS GP, "
+           "IF(HScore=AScore, "
+           "@Pts:=@Pts+1, "
+           "IF(HTeamID= %s, "
+           "  IF(HScore > AScore,@Pts:=@Pts+3,@Pts), "
+           "  IF(HScore > AScore,@Pts,@Pts:=@Pts+3) "
+           ")) AS Points "
            "FROM tbl_games "
            "WHERE YEAR(MatchTime) = 2017 "
            "  AND MatchTime < NOW() "
            "  AND (HTeamID = %s OR ATeamID = %s) "
            "  AND MatchTypeID = 21")
-    rs = database.query(sql, (teamid, teamid))
-
-    if (rs.with_rows):
-        records = rs.fetchall()
+    records = database.multiquery(sql, (teamid, teamid, teamid))
 
     stats = {}
-    stats['GP'] = 0.0
-    stats['Points'] = 0.0
     for game in records:
-        # Increment games played
-        stats['GP'] += 1
-        # Increment points
-        if (game[1] == game[3]):
-            stats['Points'] += 1
-        elif (game[0] == teamid):
-            if (game[1] > game[3]):
-                stats['Points'] += 3
-        else:
-            if (game[3] > game[1]):
-                stats['Points'] += 3
+        stats['GP'] = game[4]
+        stats['Points'] = game[5]
 
     return stats
 
