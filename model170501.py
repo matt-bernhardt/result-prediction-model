@@ -121,6 +121,14 @@ def loadStats(teamid):
     return stats
 
 
+def logStandings(log, standings):
+    log.message('Team Pts GP PPG')
+    # Maybe we can make this prettier
+    for key in sorted(standings.keys()):
+        log.message(str(key) + ': ' + str(standings[key]['Points']) + ' ' + str(standings[key]['GP']) + ' ' + str(standings[key]['PPG']))
+    log.message('')
+
+
 def outputClose(dest):
     dest.close()
 
@@ -177,6 +185,11 @@ def simulateGame(data, home, away, log):
 def simulateSeason(gamelist, log, output, database, initialdata):
     # Initialize starting data
     thisdata = dataInit()
+    # thisdata = initialdata
+
+    # Log initial standings
+    log.message('Starting position:')
+    logStandings(log, thisdata)
 
     # For each game in the list, simulate the result and calculate points array
     for game in enumerate(gamelist):
@@ -189,7 +202,7 @@ def simulateSeason(gamelist, log, output, database, initialdata):
 
 if __name__ == "__main__":
     # Log
-    log = Log('logs/model170501.log')
+    log = Log('logs/model170501_test.log')
 
     # Database
     database.connect()
@@ -200,22 +213,18 @@ if __name__ == "__main__":
 
     # Log initial standings
     log.message('Starting position:')
-    log.message('Team Pts GP PPG')
-    # Maybe we can make this prettier
-    for key in sorted(initial.keys()):
-        log.message(str(key) + ': ' + str(initial[key]['Points']) + ' ' + str(initial[key]['GP']) + ' ' + str(initial[key]['PPG']))
-    log.message('')
+    logStandings(log, initial)
 
     # Initialize output file
     # This is after the data init because the first step is to
     # write the array keys as the header row.
-    output = outputInit('output/model_v2_170522.csv', initial)
+    output = outputInit('output/model_v2_test.csv', initial)
 
     # Get list of games
     schedule = loadGames()
 
     # Simulate all season
-    for i in range(10000):
+    for i in range(10):
         log.message('Season ' + str(i))
         # This doesn't pass in data because the function will re-call that init
         simulateSeason(schedule, log, output, database, initial)
