@@ -18,6 +18,16 @@ def disconnect():
     cnx.close()
 
 
+def multiquery(query, params):
+    global cnx, cursor
+    results = cursor.execute(query, params, multi=True)
+    for cur in results:
+        if cur.with_rows:
+            records = cur.fetchall()
+    cnx.commit()
+    return records
+
+
 def query(query, params):
     global cnx, cursor
     cursor.execute(query, params)
