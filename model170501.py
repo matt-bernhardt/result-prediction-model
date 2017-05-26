@@ -1,5 +1,6 @@
 import database
 from log import Log
+from output import Output
 import numpy as np
 
 
@@ -129,28 +130,6 @@ def logStandings(log, standings):
     log.message('')
 
 
-def outputClose(dest):
-    dest.close()
-
-
-def outputInit(filename, array):
-    # Create output file
-    dest = open(filename, 'w')
-    # Write header row of array keys
-    for key in sorted(array.keys()):
-        dest.write(str(key) + ',')
-    dest.write('\n')
-    # Return
-    return dest
-
-
-def outputPoints(dest, array):
-    # This writes out a single row of the model output
-    for key in sorted(array.keys()):
-        dest.write(str(array[key]['Points']) + ',')
-    dest.write('\n')
-
-
 def simulateGame(data, home, away, log):
     # log.message(str(home) + ' vs ' + str(away))
 
@@ -197,7 +176,7 @@ def simulateSeason(gamelist, log, output, database, initialdata):
 
     # After simulating all games
     # Store final points totals for all teams in CSV file for later analysis
-    outputPoints(output, thisdata)
+    output.points(thisdata)
 
 
 if __name__ == "__main__":
@@ -207,7 +186,7 @@ if __name__ == "__main__":
     # Database
     database.connect()
 
-    # We do this now because outputInit() needs it
+    # We do this now because the Output class needs it
     initial = dataInit()
     log.message(str(initial))
 
@@ -218,7 +197,7 @@ if __name__ == "__main__":
     # Initialize output file
     # This is after the data init because the first step is to
     # write the array keys as the header row.
-    output = outputInit('output/model_v2_test.csv', initial)
+    output = Output('output/model_v2_test.csv', initial)
 
     # Get list of games
     schedule = loadGames()
@@ -233,5 +212,5 @@ if __name__ == "__main__":
 
     # Shut down
     database.disconnect()
-    outputClose(output)
+    output.end()
     log.end()
