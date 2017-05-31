@@ -28,27 +28,27 @@ def modelInit():
     # Ideally this will calculate points from stored records
     points = {}
     points['CLB'] = 19   # Columbus
-    points['DC'] = 11   # DC
-    points['CHI'] = 21   # Chicago
-    points['COL'] = 7   # Colorado
+    points['DC'] = 14   # DC
+    points['CHI'] = 24   # Chicago
+    points['COL'] = 10   # Colorado
     points['NE'] = 16   # New England
-    points['DAL'] = 19   # Dallas
+    points['DAL'] = 20   # Dallas
     points['SJ'] = 19   # San Jose
     points['KC'] = 22   # Kansas City
-    points['LA'] = 14   # Los Angeles
-    points['NY'] = 17   # New York
+    points['LA'] = 17   # Los Angeles
+    points['NY'] = 20   # New York
     points['POR'] = 18   # Portland
-    points['SEA'] = 13   # Seattle
+    points['SEA'] = 16   # Seattle
     points['VAN'] = 16   # Vancouver
     points['MON'] = 13   # Montreal
-    points['RSL'] = 11   # Salt Lake
-    points['HOU'] = 19   # Houston
-    points['TOR'] = 26   # Toronto
+    points['RSL'] = 14   # Salt Lake
+    points['HOU'] = 20   # Houston
+    points['TOR'] = 29   # Toronto
     points['PHI'] = 16   # Philadelphia
     points['ORL'] = 20   # Orlando
-    points['MIN'] = 11   # Minnesota
+    points['MIN'] = 14   # Minnesota
     points['NYC'] = 20   # New York City
-    points['ATL'] = 15   # Atlanta
+    points['ATL'] = 18   # Atlanta
     return points
 
 
@@ -113,7 +113,7 @@ def simulateSeason(gamelist, homeThreshold, drawThreshold, log, output, database
 
 if __name__ == "__main__":
     # Log
-    log = Log('logs\model170403.log')
+    log = Log('logs\model_v1_170529.log')
 
     # Database
     database.connect()
@@ -135,7 +135,7 @@ if __name__ == "__main__":
     # Initialize output file
     # This is after the points array init because the first step is to
     # write the array keys as the header row.
-    output = outputInit('output\model_v1_170522.csv', points)
+    output = outputInit('output\model_v1_170529.csv', points)
 
     log.message(str(points.keys()))
     log.message(str(points))

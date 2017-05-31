@@ -1,3 +1,4 @@
+import copy
 import database
 from log import Log
 from output import Output
@@ -141,9 +142,9 @@ def simulateGame(log, data, home, away):
     return data
 
 
-def simulateSeason(log, database, output, gamelist):
+def simulateSeason(log, database, output, gamelist, initial):
     # Initialize starting data
-    standings = dataInit(database)
+    standings = copy.deepcopy(initial)
 
     # For each game in the list, simulate the result and update standings
     for game in enumerate(gamelist):
@@ -155,7 +156,7 @@ def simulateSeason(log, database, output, gamelist):
 
 if __name__ == "__main__":
     # Log
-    log = Log('logs/model170501_test.log')
+    log = Log('logs/model_v2_170529.log')
 
     # Database
     database.connect()
@@ -166,15 +167,15 @@ if __name__ == "__main__":
     # Initialize output file
     # This is after the standings init because the first line of output is to
     # write the team abbreviations (array keys) as the header row.
-    output = Output('output/model_v2_test.csv', initial)
+    output = Output('output/model_v2_170529.csv', initial)
 
     # Get list of games
     schedule = loadGames(database)
 
     # Simulate all season
-    for i in range(10):
+    for i in range(10000):
         log.message('Season ' + str(i))
-        simulateSeason(log, database, output, schedule)
+        simulateSeason(log, database, output, schedule, initial)
 
     # Shut down
     database.disconnect()
