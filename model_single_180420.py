@@ -3,25 +3,8 @@ import database
 from log import Log
 from output import Output
 import numpy as np
+from datetime import date
 
-
-# This prediction model has been superceded by the model18* versions, but the
-# changes introduced there are largely driven by efficiency rather than
-# updated methods.
-#
-# This model is fairly naive, simulating each game result based on two
-# factors (lines 34-54)
-# 1. Who plays at home
-# 2. Which team has a higher PPG coming into the game
-#
-# Before running the model, several things must be checked and updated
-# manually:
-# 1. If needed, update the SQL statements on lines 90 and 110 to retrieve the
-#    current season's data.
-# 2. For seasons other than 2017, the list of teams (lines 62-83) should be
-#    updated.
-# 3. The names of the log and output files (lines 177 and 188, respectively)
-#    should be updated, unless you are comfortable overwriting the last run.
 
 def calculatePPG(data):
     # This expects data in a form of
@@ -81,6 +64,7 @@ def dataInit(database):
     data['MIN'] = loadStats(database, 521)
     data['NYC'] = loadStats(database, 547)
     data['ATL'] = loadStats(database, 599)
+    data['LAFC'] = loadStats(database, 602)
     data = calculatePPG(data)
     return data
 
@@ -91,7 +75,7 @@ def loadGames(database):
            "FROM tbl_games g "
            "INNER JOIN tbl_teams h on g.HTeamID = h.ID "
            "INNER JOIN tbl_teams a on g.ATeamID = a.ID "
-           "WHERE YEAR(g.MatchTime) = 2017 "
+           "WHERE YEAR(g.MatchTime) = 2018 "
            "AND g.MatchTypeID = 21 "
            "AND g.MatchTime > NOW() "
            "ORDER BY g.MatchTime ASC")
@@ -107,8 +91,8 @@ def loadGames(database):
 def loadStats(database, teamid):
     # This calculates a given team's GP, Points, and PPG values.
     # It is part of the initialization step.
-    sql = ("SET @GP = 0;"
-           "SET @Pts = 0;"
+    sql = ("SET @GP = 0.0;"
+           "SET @Pts = 0.0;"
            "SELECT HTeamID, HScore, ATeamID, AScore, @GP:=@GP+1 AS GP, "
            "IF(HScore=AScore, "
            "@Pts:=@Pts+1, "
@@ -117,18 +101,27 @@ def loadStats(database, teamid):
            "  IF(HScore > AScore,@Pts,@Pts:=@Pts+3) "
            ")) AS Points "
            "FROM tbl_games "
-           "WHERE YEAR(MatchTime) = 2017 "
+           "WHERE YEAR(MatchTime) = 2018 "
            "  AND MatchTime < NOW() "
            "  AND (HTeamID = %s OR ATeamID = %s) "
            "  AND MatchTypeID = 21")
     records = database.multiquery(sql, (teamid, teamid, teamid))
 
     stats = {}
+    stats['GP'] = 0.0
+    stats['Points'] = 0.0
+    stats['PPG'] = 0.0
     for game in records:
         stats['GP'] = game[4]
         stats['Points'] = game[5]
 
     return stats
+
+
+def renderTable(data):
+    # This renders the dictionary of standings data in a legible fashion
+    for team in data:
+        log.message(str(team) + "   " + str(int(data[team]['Points'])) + "   " + str(int(data[team]['GP'])) + "   " + str(round(data[team]['PPG'],1)) )
 
 
 def simulateGame(log, data, home, away):
@@ -174,7 +167,8 @@ def simulateSeason(log, database, output, gamelist, initial):
 
 if __name__ == "__main__":
     # Log
-    log = Log('logs/model_v2_170605.log')
+    datestamp = date.today().strftime("%y%m%d")
+    log = Log('logs/model_v2_' + str(datestamp) + '.log')
 
     # Database
     database.connect()
@@ -182,10 +176,12 @@ if __name__ == "__main__":
     # Load initial standings
     initial = dataInit(database)
 
+    renderTable(initial)
+
     # Initialize output file
     # This is after the standings init because the first line of output is to
     # write the team abbreviations (array keys) as the header row.
-    output = Output('output/model_v2_170605.csv', initial)
+    output = Output('output/model_v2_' + str(datestamp) + '.csv', initial)
 
     # Get list of games
     schedule = loadGames(database)

@@ -7,31 +7,28 @@ import numpy as np
 # included here for historical reasons only.
 #
 # This model is extremely naive, simulating each game result based only on
-# which team is playing at home (lines 140-149).
+# which team is playing at home (lines 137-146).
 #
 # Before running the model, several things must be checked and updated
 # manually:
-# 1. If needed, update the SQL statement on lines 27-34 to retrieve the
+# 1. If needed, update the SQL statement on lines 26-31 to retrieve the
 #    current season's games.
-# 2. The current points totals for each team must be updated on lines 49-70.
+# 2. The current points totals for each team must be updated on lines 46-67.
 # 3. Also, for seasons other than 2017, the list of teams itself should be
-#    updated - using their three-letter abbreviations (i.e. 'CLB' for
-#    Columbus)
-# 4. The names of the log and output files (lines 135 and 157, respectively)
+#    updated - using their ID values (i.e. 11 for Columbus)
+# 4. The names of the log and output files (lines 132 and 154, respectively)
 #    should be updated, unless you are comfortable overwriting the last run.
 #
 # (I wonder why this version is deprecated...)
 
 def loadGames():
     # This should be passed from outside, so we just get records once
-    sql = ("SELECT g.ID, h.team3ltr AS Home, a.team3ltr AS Away "
-           "FROM tbl_games g "
-           "INNER JOIN tbl_teams h on g.HTeamID = h.ID "
-           "INNER JOIN tbl_teams a on g.ATeamID = a.ID "
-           "WHERE YEAR(g.MatchTime) = 2017 "
-           "AND g.MatchTypeID = 21 "
-           "AND g.MatchTime > NOW() "
-           "ORDER BY g.MatchTime ASC")
+    sql = ("SELECT ID, HTeamID, ATeamID "
+           "FROM tbl_games "
+           "WHERE YEAR(MatchTime) = 2017 "
+           "AND MatchTypeID = 21 "
+           "AND MatchTime > NOW() "
+           "ORDER BY MatchTime ASC")
     log.message(sql)
     rs = database.query(sql, ())
 
@@ -46,28 +43,28 @@ def modelInit():
     # Points
     # Ideally this will calculate points from stored records
     points = {}
-    points['CLB'] = 22   # Columbus
-    points['DC'] = 15   # DC
-    points['CHI'] = 25   # Chicago
-    points['COL'] = 13   # Colorado
-    points['NE'] = 20   # New England
-    points['DAL'] = 23   # Dallas
-    points['SJ'] = 19   # San Jose
-    points['KC'] = 25   # Kansas City
-    points['LA'] = 18   # Los Angeles
-    points['NY'] = 20   # New York
-    points['POR'] = 21   # Portland
-    points['SEA'] = 19   # Seattle
-    points['VAN'] = 19   # Vancouver
-    points['MON'] = 16   # Montreal
-    points['RSL'] = 14   # Salt Lake
-    points['HOU'] = 23   # Houston
-    points['TOR'] = 29   # Toronto
-    points['PHI'] = 16   # Philadelphia
-    points['ORL'] = 24   # Orlando
-    points['MIN'] = 14   # Minnesota
-    points['NYC'] = 24   # New York City
-    points['ATL'] = 18   # Atlanta
+    points[11] = 13   # Columbus
+    points[12] = 11   # DC
+    points[13] = 11   # Chicago
+    points[14] = 4   # Colorado
+    points[15] = 10   # New England
+    points[16] = 15   # Dallas
+    points[17] = 12   # San Jose
+    points[18] = 15    # Kansas City
+    points[19] = 7    # Los Angeles
+    points[20] = 16   # New York
+    points[42] = 17    # Portland
+    points[43] = 10    # Seattle
+    points[44] = 10    # Vancouver
+    points[45] = 7    # Montreal
+    points[340] = 8   # Salt Lake
+    points[427] = 13   # Houston
+    points[463] = 13   # Toronto
+    points[479] = 4   # Philadelphia
+    points[506] = 18   # Orlando
+    points[521] = 8   # Minnesota
+    points[547] = 13  # New York City
+    points[599] = 11   # Atlanta
     return points
 
 
@@ -132,7 +129,7 @@ def simulateSeason(gamelist, homeThreshold, drawThreshold, log, output, database
 
 if __name__ == "__main__":
     # Log
-    log = Log('logs\model_v1_170605.log')
+    log = Log('logs\model170403.log')
 
     # Database
     database.connect()
@@ -154,7 +151,7 @@ if __name__ == "__main__":
     # Initialize output file
     # This is after the points array init because the first step is to
     # write the array keys as the header row.
-    output = outputInit('output\model_v1_170605.csv', points)
+    output = outputInit('output\model170403.csv', points)
 
     log.message(str(points.keys()))
     log.message(str(points))
