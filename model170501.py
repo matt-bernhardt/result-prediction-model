@@ -5,6 +5,24 @@ from output import Output
 import numpy as np
 
 
+# This prediction model has been superceded by the model18* versions, but the
+# changes introduced there are largely driven by efficiency rather than
+# updated methods.
+#
+# This model is fairly naive, simulating each game result based on two
+# factors (lines 34-54)
+# 1. Who plays at home
+# 2. Which team has a higher PPG coming into the game
+#
+# Before running the model, several things must be checked and updated
+# manually:
+# 1. If needed, update the SQL statements on lines 90 and 110 to retrieve the
+#    current season's data.
+# 2. For seasons other than 2017, the list of teams (lines 62-83) should be
+#    updated.
+# 3. The names of the log and output files (lines 177 and 188, respectively)
+#    should be updated, unless you are comfortable overwriting the last run.
+
 def calculatePPG(data):
     # This expects data in a form of
     # {'MIN': {'Points': 8.0, 'PPG': 0.8888888888888888, 'GP': 9.0}, 'TOR': {'Points': 16.0, 'PPG': 1.7777777777777777, 'GP': 9.0}}
@@ -156,7 +174,7 @@ def simulateSeason(log, database, output, gamelist, initial):
 
 if __name__ == "__main__":
     # Log
-    log = Log('logs/model_v2_170529.log')
+    log = Log('logs/model_v2_170605.log')
 
     # Database
     database.connect()
@@ -167,7 +185,7 @@ if __name__ == "__main__":
     # Initialize output file
     # This is after the standings init because the first line of output is to
     # write the team abbreviations (array keys) as the header row.
-    output = Output('output/model_v2_170529.csv', initial)
+    output = Output('output/model_v2_170605.csv', initial)
 
     # Get list of games
     schedule = loadGames(database)
