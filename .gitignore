@@ -1,3 +1,11 @@
-*.pyc
+# Sensitive R files
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
 
+# Database connection
 connection.py
+
+# Compiled python
+*.pyc
