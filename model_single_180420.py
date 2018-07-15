@@ -148,7 +148,8 @@ def simulateGame(log, data, home, away):
     data[away]['GP'] += 1
 
     # Recalculate PPG
-    data = calculatePPG(data)
+    data[home]['PPG'] = data[home]['Points'] / data[home]['GP']
+    data[away]['PPG'] = data[away]['Points'] / data[away]['GP']
 
     return data
 
