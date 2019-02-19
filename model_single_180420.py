@@ -39,48 +39,49 @@ def calculateThreshold(homePPG, awayPPG):
     return threshold
 
 
-def dataInit(database):
+def dataInit(database, season):
     # This initializes the nested dictionary that records the simulation output
     data = {}
-    data['CLB'] = loadStats(database, 11)
-    data['DC'] = loadStats(database, 12)
-    data['CHI'] = loadStats(database, 13)
-    data['COL'] = loadStats(database, 14)
-    data['NE'] = loadStats(database, 15)
-    data['DAL'] = loadStats(database, 16)
-    data['SJ'] = loadStats(database, 17)
-    data['KC'] = loadStats(database, 18)
-    data['LA'] = loadStats(database, 19)
-    data['NY'] = loadStats(database, 20)
-    data['POR'] = loadStats(database, 42)
-    data['SEA'] = loadStats(database, 43)
-    data['VAN'] = loadStats(database, 44)
-    data['MON'] = loadStats(database, 45)
-    data['RSL'] = loadStats(database, 340)
-    data['HOU'] = loadStats(database, 427)
-    data['TOR'] = loadStats(database, 463)
-    data['PHI'] = loadStats(database, 479)
-    data['ORL'] = loadStats(database, 506)
-    data['MIN'] = loadStats(database, 521)
-    data['NYC'] = loadStats(database, 547)
-    data['ATL'] = loadStats(database, 599)
-    data['LAFC'] = loadStats(database, 602)
+    data['CLB'] = loadStats(database, 11, season)
+    data['DC'] = loadStats(database, 12, season)
+    data['CHI'] = loadStats(database, 13, season)
+    data['COL'] = loadStats(database, 14, season)
+    data['NE'] = loadStats(database, 15, season)
+    data['DAL'] = loadStats(database, 16, season)
+    data['SJ'] = loadStats(database, 17, season)
+    data['KC'] = loadStats(database, 18, season)
+    data['LA'] = loadStats(database, 19, season)
+    data['NY'] = loadStats(database, 20, season)
+    data['POR'] = loadStats(database, 42, season)
+    data['SEA'] = loadStats(database, 43, season)
+    data['VAN'] = loadStats(database, 44, season)
+    data['MON'] = loadStats(database, 45, season)
+    data['RSL'] = loadStats(database, 340, season)
+    data['HOU'] = loadStats(database, 427, season)
+    data['TOR'] = loadStats(database, 463, season)
+    data['PHI'] = loadStats(database, 479, season)
+    data['ORL'] = loadStats(database, 506, season)
+    data['MIN'] = loadStats(database, 521, season)
+    data['NYC'] = loadStats(database, 547, season)
+    data['CIN'] = loadStats(database, 584, season)
+    data['ATL'] = loadStats(database, 599, season)
+    data['LAFC'] = loadStats(database, 602, season)
     data = calculatePPG(data)
     return data
 
 
-def loadGames(database):
+def loadGames(database, season):
     # This should be passed from outside, so we just get records once
     sql = ("SELECT g.ID, h.team3ltr AS Home, a.team3ltr AS Away "
            "FROM tbl_games g "
            "INNER JOIN tbl_teams h on g.HTeamID = h.ID "
            "INNER JOIN tbl_teams a on g.ATeamID = a.ID "
-           "WHERE YEAR(g.MatchTime) = 2018 "
+           "WHERE YEAR(g.MatchTime) = %s "
            "AND g.MatchTypeID = 21 "
            "AND g.MatchTime > NOW() "
            "ORDER BY g.MatchTime ASC")
     # log.message(sql)
-    rs = database.query(sql, ())
+    rs = database.query(sql, (season, ))
 
     if (rs.with_rows):
         records = rs.fetchall()
@@ -88,7 +89,7 @@ def loadGames(database):
     return records
 
 
-def loadStats(database, teamid):
+def loadStats(database, teamid, season):
     # This calculates a given team's GP, Points, and PPG values.
     # It is part of the initialization step.
     sql = ("SET @GP = 0.0;"
@@ -101,11 +102,11 @@ def loadStats(database, teamid):
            "  IF(HScore > AScore,@Pts,@Pts:=@Pts+3) "
            ")) AS Points "
            "FROM tbl_games "
-           "WHERE YEAR(MatchTime) = 2018 "
+           "WHERE YEAR(MatchTime) = %s "
            "  AND MatchTime < NOW() "
            "  AND (HTeamID = %s OR ATeamID = %s) "
            "  AND MatchTypeID = 21")
-    records = database.multiquery(sql, (teamid, teamid, teamid))
+    records = database.multiquery(sql, (teamid, season, teamid, teamid))
 
     stats = {}
     stats['GP'] = 0.0
@@ -167,6 +168,9 @@ def simulateSeason(log, database, output, gamelist, initial):
 
 
 if __name__ == "__main__":
+    # Variable initialization
+    season = date.today().year
+
     # Log
     datestamp = date.today().strftime("%y%m%d")
     log = Log('logs/model_v2_' + str(datestamp) + '.log')
@@ -175,7 +179,7 @@ if __name__ == "__main__":
     database.connect()
 
     # Load initial standings
-    initial = dataInit(database)
+    initial = dataInit(database, season)
 
     renderTable(initial)
 
@@ -185,7 +189,7 @@ if __name__ == "__main__":
     output = Output('output/model_v2_' + str(datestamp) + '.csv', initial)
 
     # Get list of games
-    schedule = loadGames(database)
+    schedule = loadGames(database, season)
 
     # Simulate all season
     for i in range(10000):
