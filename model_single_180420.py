@@ -10,7 +10,7 @@ def calculatePPG(data):
     # This expects data in a form of
     # {'MIN': {'Points': 8.0, 'PPG': 0.8888888888888888, 'GP': 9.0}, 'TOR': {'Points': 16.0, 'PPG': 1.7777777777777777, 'GP': 9.0}}
     for team in data:
-        data[team]['PPG'] = data[team]['Points'] / data[team]['GP']
+        data[team]['PPG'] = 0.0 if data[team]['GP'] == 0 else data[team]['Points'] / data[team]['GP']
     return data
 
 
@@ -75,6 +75,11 @@ def loadGames(database, season):
 def loadStats(database, teamid, season):
     # This calculates a given team's GP, Points, and PPG values.
     # It is part of the initialization step.
+    stats = {}
+    stats['GP'] = 0.0
+    stats['Points'] = 0.0
+    stats['PPG'] = 0.0
+
     sql = ("SET @GP = 0.0;"
            "SET @Pts = 0.0;"
            "SELECT HTeamID, HScore, ATeamID, AScore, @GP:=@GP+1 AS GP, "
@@ -91,10 +96,6 @@ def loadStats(database, teamid, season):
            "  AND MatchTypeID = 21")
     records = database.multiquery(sql, (teamid, season, teamid, teamid))
 
-    stats = {}
-    stats['GP'] = 0.0
-    stats['Points'] = 0.0
-    stats['PPG'] = 0.0
     for game in records:
         stats['GP'] = game[4]
         stats['Points'] = game[5]
