@@ -21,9 +21,12 @@ def disconnect():
 def multiquery(query, params):
     global cnx, cursor
     results = cursor.execute(query, params, multi=True)
-    for cur in results:
-        if cur.with_rows:
-            records = cur.fetchall()
+    if -1 == cursor.rowcount:
+        return cursor
+    else:
+        for cur in results:
+            if cur.with_rows:
+                records = cur.fetchall()
     cnx.commit()
     return records
 
